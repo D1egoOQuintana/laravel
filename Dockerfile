@@ -43,9 +43,10 @@ RUN mkdir -p /var/www/storage/logs \
     && mkdir -p /var/www/storage/framework/sessions \
     && mkdir -p /var/www/storage/framework/views \
     && mkdir -p /var/www/bootstrap/cache \
+    && touch /var/www/storage/logs/laravel.log \
     && chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage \
-    && chmod -R 755 /var/www/bootstrap/cache
+    && chmod -R 775 /var/www/storage \
+    && chmod -R 775 /var/www/bootstrap/cache
 
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
@@ -58,8 +59,15 @@ RUN php artisan view:clear || true
 # Create storage symlink
 RUN php artisan storage:link || true
 
+# Create a startup script to set proper permissions at runtime
+RUN echo '#!/bin/bash' > /var/www/start.sh \
+    && echo 'chown -R www-data:www-data /var/www/storage' >> /var/www/start.sh \
+    && echo 'chmod -R 775 /var/www/storage' >> /var/www/start.sh \
+    && echo 'exec /usr/bin/supervisord' >> /var/www/start.sh \
+    && chmod +x /var/www/start.sh
+
 # Expose port 10000 (required by Render)
 EXPOSE 10000
 
 # Start supervisor
-CMD ["/usr/bin/supervisord"]
+CMD ["/var/www/start.sh"]
