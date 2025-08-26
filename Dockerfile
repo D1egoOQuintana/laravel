@@ -61,8 +61,15 @@ RUN php artisan storage:link || true
 
 # Create a startup script to set proper permissions at runtime
 RUN echo '#!/bin/bash' > /var/www/start.sh \
+    && echo 'echo "🚀 Starting Laravel application..."' >> /var/www/start.sh \
     && echo 'chown -R www-data:www-data /var/www/storage' >> /var/www/start.sh \
     && echo 'chmod -R 775 /var/www/storage' >> /var/www/start.sh \
+    && echo 'echo "🗃️ Running database migrations..."' >> /var/www/start.sh \
+    && echo 'php artisan migrate --force || echo "Migration failed, continuing..."' >> /var/www/start.sh \
+    && echo 'echo "⚡ Caching configuration..."' >> /var/www/start.sh \
+    && echo 'php artisan config:cache || true' >> /var/www/start.sh \
+    && echo 'php artisan route:cache || true' >> /var/www/start.sh \
+    && echo 'echo "✅ Starting web server..."' >> /var/www/start.sh \
     && echo 'exec /usr/bin/supervisord' >> /var/www/start.sh \
     && chmod +x /var/www/start.sh
 
