@@ -50,15 +50,14 @@ RUN mkdir -p /var/www/storage/logs \
 # Make deployment script executable
 RUN chmod +x /var/www/scripts/00-laravel-deploy.sh
 
-# Create a basic .env file for build process (will be overridden by Render env vars)
-RUN echo "APP_NAME=Laravel" > /var/www/.env \
-    && echo "APP_ENV=production" >> /var/www/.env \
-    && echo "APP_KEY=" >> /var/www/.env \
-    && echo "APP_DEBUG=true" >> /var/www/.env \
-    && echo "DB_CONNECTION=pgsql" >> /var/www/.env
+# Don't create .env file - let Laravel use environment variables directly
+RUN rm -f /var/www/.env
 
 # Run deployment script
 RUN /var/www/scripts/00-laravel-deploy.sh
+
+# Remove .env file to force using environment variables
+RUN rm -f /var/www/.env
 
 # Expose port 10000 (required by Render)
 EXPOSE 10000

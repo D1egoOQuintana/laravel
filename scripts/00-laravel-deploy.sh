@@ -2,6 +2,16 @@
 
 echo "🚀 Starting Laravel deployment..."
 
+# Create minimal .env if it doesn't exist (for build time only)
+if [ ! -f /var/www/.env ]; then
+    echo "📝 Creating minimal .env for build..."
+    echo "APP_NAME=Laravel" > /var/www/.env
+    echo "APP_ENV=production" >> /var/www/.env
+    echo "APP_KEY=" >> /var/www/.env
+    echo "APP_DEBUG=false" >> /var/www/.env
+    echo "DB_CONNECTION=pgsql" >> /var/www/.env
+fi
+
 # Install Composer dependencies
 echo "📦 Installing Composer dependencies..."
 composer install --no-dev --optimize-autoloader --no-interaction
