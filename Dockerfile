@@ -54,7 +54,7 @@ RUN chmod +x /var/www/scripts/00-laravel-deploy.sh
 RUN echo "APP_NAME=Laravel" > /var/www/.env \
     && echo "APP_ENV=production" >> /var/www/.env \
     && echo "APP_KEY=" >> /var/www/.env \
-    && echo "APP_DEBUG=false" >> /var/www/.env \
+    && echo "APP_DEBUG=true" >> /var/www/.env \
     && echo "DB_CONNECTION=pgsql" >> /var/www/.env
 
 # Run deployment script
