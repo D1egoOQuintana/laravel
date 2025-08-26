@@ -59,8 +59,19 @@ RUN /var/www/scripts/00-laravel-deploy.sh
 # Remove .env file to force using environment variables
 RUN rm -f /var/www/.env
 
+# Create a startup script that will run when container starts
+RUN echo '#!/bin/bash' > /var/www/startup.sh \
+    && echo 'echo "🔧 Container starting..."' >> /var/www/startup.sh \
+    && echo 'echo "📍 Checking environment variables..."' >> /var/www/startup.sh \
+    && echo 'echo "APP_KEY: ${APP_KEY:0:20}..."' >> /var/www/startup.sh \
+    && echo 'echo "APP_ENV: $APP_ENV"' >> /var/www/startup.sh \
+    && echo 'echo "DB_CONNECTION: $DB_CONNECTION"' >> /var/www/startup.sh \
+    && echo 'echo "🚀 Starting supervisord..."' >> /var/www/startup.sh \
+    && echo '/usr/bin/supervisord' >> /var/www/startup.sh \
+    && chmod +x /var/www/startup.sh
+
 # Expose port 10000 (required by Render)
 EXPOSE 10000
 
 # Start supervisor
-CMD ["/usr/bin/supervisord"]
+CMD ["/var/www/startup.sh"]

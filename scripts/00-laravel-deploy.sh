@@ -37,7 +37,11 @@ php artisan event:cache
 
 # Run database migrations
 echo "🗃️ Running database migrations..."
-php artisan migrate --force || echo "⚠️  Migration failed - continuing anyway"
+if [ -n "$DATABASE_URL" ]; then
+    php artisan migrate --force || echo "⚠️  Migration failed - continuing anyway"
+else
+    echo "⚠️  No DATABASE_URL found, skipping migrations"
+fi
 
 # Create storage symlink if it doesn't exist
 if [ ! -L public/storage ]; then
