@@ -47,31 +47,19 @@ RUN mkdir -p /var/www/storage/logs \
     && chmod -R 755 /var/www/storage \
     && chmod -R 755 /var/www/bootstrap/cache
 
-# Make deployment script executable
-RUN chmod +x /var/www/scripts/00-laravel-deploy.sh
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Don't create .env file - let Laravel use environment variables directly
-RUN rm -f /var/www/.env
+# Clear any existing cache and config
+RUN php artisan config:clear || true
+RUN php artisan cache:clear || true
+RUN php artisan view:clear || true
 
-# Run deployment script
-RUN /var/www/scripts/00-laravel-deploy.sh
-
-# Remove .env file to force using environment variables
-RUN rm -f /var/www/.env
-
-# Create a startup script that will run when container starts
-RUN echo '#!/bin/bash' > /var/www/startup.sh \
-    && echo 'echo "🔧 Container starting..."' >> /var/www/startup.sh \
-    && echo 'echo "📍 Checking environment variables..."' >> /var/www/startup.sh \
-    && echo 'echo "APP_KEY: ${APP_KEY:0:20}..."' >> /var/www/startup.sh \
-    && echo 'echo "APP_ENV: $APP_ENV"' >> /var/www/startup.sh \
-    && echo 'echo "DB_CONNECTION: $DB_CONNECTION"' >> /var/www/startup.sh \
-    && echo 'echo "🚀 Starting supervisord..."' >> /var/www/startup.sh \
-    && echo '/usr/bin/supervisord' >> /var/www/startup.sh \
-    && chmod +x /var/www/startup.sh
+# Create storage symlink
+RUN php artisan storage:link || true
 
 # Expose port 10000 (required by Render)
 EXPOSE 10000
 
 # Start supervisor
-CMD ["/var/www/startup.sh"]
+CMD ["/usr/bin/supervisord"]
